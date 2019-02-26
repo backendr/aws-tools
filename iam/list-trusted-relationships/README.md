@@ -1,6 +1,12 @@
 # List Trusted Relationships
 Prints role names and the trusted relationships for the provided `profile`.
 
+Example use cases:
+
+  + You want a quick overview of role access
+  + You want to audit trusted relationships for roles
+  + You want to parse the YAML output for processing
+
 ### Requirements
 
 + Your `profile` credentials must allow you to `iam:ListRoles`.
