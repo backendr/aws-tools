@@ -15,9 +15,10 @@ Example use cases:
 
 ### Usage
 
-`./list-trusted-relationships {profile}`
+`./list-trusted-relationships [--profile {profile}]`
 
 Where `profile` is the name of the credentials you want to use.
+If `--profile` is not used, the default will be used.
 
 ### Output
 

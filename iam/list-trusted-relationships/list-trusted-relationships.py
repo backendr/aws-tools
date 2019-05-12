@@ -25,10 +25,13 @@ class Data:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('profile', help='AWS credentials profile to use')
+    parser.add_argument('--profile', help='AWS credentials profile to use')
     args = parser.parse_args()
 
-    iam = boto3.session.Session(profile_name=args.profile).client('iam')
+    if args.profile:
+        iam = boto3.session.Session(profile_name=args.profile).client('iam')
+    else:
+        iam = boto3.client('iam')
     roles = iam.list_roles()
     data = Data()
 
