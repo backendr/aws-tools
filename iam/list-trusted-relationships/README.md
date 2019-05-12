@@ -14,10 +14,15 @@ Example use cases:
 + `boto3` must be installed.
 
 ### Usage
+```
+usage: list-trusted-relationships.py [-h] [--profile PROFILE]
 
-`./list-trusted-relationships [--profile {profile}]`
+optional arguments:
+  -h, --help         show this help message and exit
+    --profile PROFILE  AWS credentials profile to use
 
-Where `profile` is the name of the credentials you want to use.
+```
+
 If `--profile` is not used, the default will be used.
 
 ### Output
