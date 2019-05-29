@@ -23,7 +23,7 @@ optional arguments:
 Searching for SomeName-ElasticL-XXXXXXXXXX in 584 Stacks ...
 This can take up to 175 seconds
 
-MtgApiOlympos-Admin-JenkinsViafree
+StackName-SomeName-Jenkins
 ```
 or if nothing found
 ```
