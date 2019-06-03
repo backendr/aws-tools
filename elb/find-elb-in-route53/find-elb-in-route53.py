@@ -32,7 +32,7 @@ if __name__ == '__main__':
                        for page in paginator.paginate(HostedZoneId=hosted_zone['Id'])
                        for record_set in page['ResourceRecordSets']
                        if 'AliasTarget' in record_set
-                       if args.elb_dns in record_set['AliasTarget']['DNSName']]
+                       if args.elb_dns.lower() in record_set['AliasTarget']['DNSName']]
         if record_sets:
             found_record_sets.append(record_sets[0])
 
