@@ -30,12 +30,16 @@ optional arguments:
   --dry              Only print. Donesn't make changes
 ```
 `--age` is required, which is the number of days since the stack was last updated.
+
 `--dry` will only print the stacks. Use this to validate the stacks to remove.
 
 ##### Example Usage
 `./stack-cleanup --age 30 --dry`
+
 > Check output
+
 `./stack-cleanup --age 30`
+
 > Check output and enter \`Y\`
 
 ### Whitelist
