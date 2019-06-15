@@ -1,0 +1,26 @@
+# WHITELIST
+#
+# Lines starting with '#' will be ignored
+#
+# Contains strings that can be found in stack names
+# that should be excluded from deletion
+#
+# Case insensitive searching
+#
+# Configured for MSP-OLYMPOS
+
+########################
+# KEYWORD WHITELISTING #
+########################
+
+# vpc
+# subnet
+# guardduty
+
+
+############################
+# EXACT STACK WHITELISTING #
+############################
+
+# Development-Lambda-ServiceName
+# Development-Service-Frontend
