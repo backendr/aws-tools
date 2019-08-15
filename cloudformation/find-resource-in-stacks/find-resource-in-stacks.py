@@ -2,11 +2,13 @@
 
 import argparse
 import boto3
-from time import sleep
+import backoff
+from botocore.exceptions import ClientError
 
 STACK_FILTER = ['CREATE_COMPLETE',
                 'DELETE_FAILED',
-                'UPDATE_COMPLETE']
+                'UPDATE_COMPLETE',
+                'UPDATE_ROLLBACK_COMPLETE']
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -16,36 +18,54 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.profile and args.region:
-        cloudformation = boto3.session.Session(profile_name=args.profile).client('cloudformation', region_name=args.region)
+        cfn = boto3.session.Session(profile_name=args.profile).client('cloudformation', region_name=args.region)
     elif args.profile:
-        cloudformation = boto3.session.Session(profile_name=args.profile).client('cloudformation')
+        cfn = boto3.session.Session(profile_name=args.profile).client('cloudformation')
     elif args.region:
-        cloudformation = boto3.client('cloudformation', region_name=args.region)
+        cfn = boto3.client('cloudformation', region_name=args.region)
     else:
-        cloudformation = boto3.client('cloudformation')
+        cfn = boto3.client('cloudformation')
 
-    # get all stacks
-    paginator = cloudformation.get_paginator('list_stacks')
+    # get all stack names
+    paginator = cfn.get_paginator('list_stacks')
     stack_names = [stack['StackName']
                    for page in paginator.paginate(StackStatusFilter=STACK_FILTER)
                    for stack in page['StackSummaries']]
 
     # search through stacks till finding a hit
-    paginator = cloudformation.get_paginator('list_stack_resources')
+    paginator = cfn.get_paginator('list_stack_resources')
 
-    def has_resource_in_stack(stack_id):
+    @backoff.on_exception(backoff.expo, ClientError)
+    def find_resource_in_stack(stack_id):
+        found = []
         for page in paginator.paginate(StackName=stack_id):
             for stack_resources in page['StackResourceSummaries']:
                 if args.resource in stack_resources['PhysicalResourceId']:
-                    return True
-        return False
+                    found.append(stack_resources['PhysicalResourceId'])
+        return found
 
-    print('Searching for {} in {} Stacks ...\nThis can take up to {} seconds\n'.format(
-        args.resource, len(stack_names), int(0.3 * len(stack_names))))
-    for stack_name in stack_names:
-        if has_resource_in_stack(stack_name):
-            print(stack_name)
-            exit(0)
-        sleep(0.3)
+    print(f'Searching for {args.resource} in {len(stack_names)} Stacks...')
+    results = {}
+    count = 1
+    try:
+        for stack_name in stack_names:
+            print(f'[CHECKING {count}/{len(stack_names)}] {stack_name}')
+            findings = find_resource_in_stack(stack_name)
+            if findings:
+                print(f'[FOUND] {stack_name}')
+                results[stack_name] = findings
+            count += 1
+    except KeyboardInterrupt:
+        print('KeyboardInterupt')
 
-    print('No matching resource found in {} stacks'.format(len(stack_names)))
+    # print a summary
+    print('\n\nSUMMARY:')
+    print(f'Stacks Checked: {count}')
+    if results:
+        for k in results.keys():
+            print(f'Stack Name:\n\t{k}\nPhysical Resource IDs:')
+            for v in results[k]:
+                print(f'\t{v}')
+            print()
+    else:
+        print('Nothing found')
