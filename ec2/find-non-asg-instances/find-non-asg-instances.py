@@ -40,7 +40,10 @@ if __name__ == '__main__':
                         for asg in page['AutoScalingGroups']
                         for instance in asg['Instances']]
 
-    non_asg_instances = set(instance_ids) - set(asg_instance_ids)
+    non_asg_instances = list(set(instance_ids) - set(asg_instance_ids))
+    non_asg_instance_descriptions = ec2.describe_instances(InstanceIds=non_asg_instances)
     print('{} Non-ASG Instances:'.format(len(non_asg_instances)))
-    print(*non_asg_instances, sep='\n')
+    for reservation in non_asg_instance_descriptions['Reservations']:
+        for instance in reservation['Instances']:
+            print(f'{instance["InstanceId"]} | {instance["State"]["Name"]}')
 
