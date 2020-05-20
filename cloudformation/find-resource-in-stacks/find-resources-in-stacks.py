@@ -12,7 +12,7 @@ STACK_FILTER = ['CREATE_COMPLETE',
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('resource', help='Physical Resource Id')
+    parser.add_argument('--resources', nargs='+', help='One or more Physical Resource Ids')
     parser.add_argument('--profile', help='AWS credentials profile to use')
     parser.add_argument('--region', help='Region to search. Eg: eu-west-1')
     args = parser.parse_args()
@@ -37,14 +37,13 @@ if __name__ == '__main__':
 
     @backoff.on_exception(backoff.expo, ClientError)
     def find_resource_in_stack(stack_id):
-        found = []
         for page in paginator.paginate(StackName=stack_id):
             for stack_resources in page['StackResourceSummaries']:
-                if args.resource in stack_resources['PhysicalResourceId']:
-                    found.append(stack_resources['PhysicalResourceId'])
-        return found
+                if stack_resources['PhysicalResourceId'] in args.resources:
+                    return stack_resources['PhysicalResourceId']
+        return None
 
-    print(f'Searching for {args.resource} in {len(stack_names)} Stacks...')
+    print(f'Searching for {args.resources} in {len(stack_names)} Stacks...')
     results = {}
     count = 1
     try:
@@ -54,8 +53,12 @@ if __name__ == '__main__':
             if findings:
                 print(f'[FOUND] {stack_name}')
                 results[stack_name] = findings
+            if len(results) == len(args.resources):
+                # we have found all resources no need to continue
+                break
             count += 1
     except KeyboardInterrupt:
+        # print any findings even if interrupted
         print('KeyboardInterupt')
 
     # print a summary
@@ -63,9 +66,6 @@ if __name__ == '__main__':
     print(f'Stacks Checked: {count}')
     if results:
         for k in results.keys():
-            print(f'Stack Name:\n\t{k}\nPhysical Resource IDs:')
-            for v in results[k]:
-                print(f'\t{v}')
-            print()
+            print(f'Stack Name:\n\t{k}\nPhysical Resource ID:\n\t{results[k]}\n')
     else:
         print('Nothing found')

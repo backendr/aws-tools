@@ -1,12 +1,15 @@
-# Find Resource in Stacks
-Finds the `PhysicalResourceId` of a resource in stacks which are not updating.
+# Find Resources in Stacks
+Finds one or more `PhysicalResourceId`s in stacks which are not updating.
 
 Handles Keyboard Interupts, so that you can kill a search and view any processed stacks.
 
-Uses `backoff` for faster cloudformation API calls
+Uses `backoff` for faster cloudformation API calls.
+
+Will stop scanning stacks once all resources have been found.
 
 ### Use case
-Trying to find if a resource is managed by Cloudformation, and which stack.
++ Trying to find if a resource is managed by Cloudformation, and which stack.
++ Finding resources with non human readable names in stacks
 
 ### Requirements
 + `boto3`
@@ -15,39 +18,40 @@ Trying to find if a resource is managed by Cloudformation, and which stack.
 
 ### Usage
 ```
-usage: find-resource-in-stacks.py [-h] [--profile PROFILE] [--region REGION]
-                                  resource
-
-positional arguments:
-  resource           Physical Resource Id
+usage: find-resources-in-stacks.py [-h]
+                                   [--resources RESOURCES [RESOURCES ...]]
+                                   [--profile PROFILE] [--region REGION]
 
 optional arguments:
-  -h, --help         show this help message and exit
-  --profile PROFILE  AWS credentials profile to use
-  --region REGION    Region to search. Eg: eu-west-1
+  -h, --help            show this help message and exit
+  --resources RESOURCES [RESOURCES ...]
+                        One or more Physical Resource Ids
+  --profile PROFILE     AWS credentials profile to use
+  --region REGION       Region to search. Eg: eu-west-1
+
 ```
 
 ### Output
 ```
-Searching for Jenkins in 584 Stacks ...
-[CHECKING 1/584] Some-Stack-Name
+Searching for abc-le-1g76sm69fpb3n abc-le-1k8qcnhfm52ql in 584 Stacks ...
+[FOUND 1/584] Reddis-Stack
 [CHECKING 2/584] Another-Stack-Name
-[CHECKING 3/584] Jenkins-Role
-[CHECKING 4/584] Jenkins-Instance
+[CHECKING 3/584] Jenkins-Instance
+[FOUND 4/584] Another-Reddis-Stack
+
 ...
 
 SUMMARY:
-Stacks Checked: 584
+Stacks Checked: 4
 Stack Name:
-    Jenkins-Role
-Physical Resource IDs:
-    Jenkins-role-HTF89AN83S
-    Jenkins-Policy-ASDERF543E
+	MtgApi-Stage-LegoResources
+Physical Resource ID:
+	abc-le-1g76sm69fpb3n
 
 Stack Name:
-    Jenkins-Instance
-Physical Resource IDs:
-    Jenkins-Instance-HTFGF987UHB
+	MtgApi-Prod-LegoResources
+Physical Resource ID:
+	abc-le-1k8qcnhfm52ql
 
 ```
 or if nothing found
